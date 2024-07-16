@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Distrib</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        .download-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .copy-button {
+            background: none;
+            border: none;
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .cmd-button {
+            background: none;
+            border: none;
+            color: #000;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            margin-left: 10px;
+        }
+        .tooltip-custom {
+            position: absolute;
+            z-index: 1000;
+            display: none;
+            background: #000;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        /* Задаем фоновую картинку для body */
+        body {
+            background: url('/static/scale_1200.jpg') no-repeat center top;
+            background-size: auto;
+            margin: 0;
+            padding: 0;
+            transition: background-position-y 0.3s; /* Добавляем плавную анимацию при изменении позиции фона */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('download_url', current_directory=current_directory) }}" class="btn btn-primary download-button">Загрузить файл-URL</a>
+        <h1 class="my-4">Папка: {{ current_directory }}</h1>
+        <form method="post" action="{{ url_for('search') }}" class="form-inline mb-4">
+            <label for="query" class="sr-only">Поиск:</label>
+            <input type="text" id="query" name="query" class="form-control mr-2" required>
+            <button type="submit" class="btn btn-primary">Поиск</button>
+        </form>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>Размер (MB)</th>
+                    <th>Создан</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td title="{{ file.network_path }}">
+                        {% if file.is_dir %}
+                        <a href="{{ url_for('index', subpath=current_directory + '/' + file.name) }}">{{ file.name }}</a>
+                        {% else %}
+                        {{ file.name }}
+                        {% endif %}
+                    </td>
+                    <td>{{ file.size if file.size != '' else '-' }}</td>
+                    <td>{{ file.creation_time }}</td>
+                    <td>
+                        {% if not file.is_dir %}
+                        <a href="{{ url_for('download_file', filename=current_directory + '/' + file.name) }}" class="btn btn-success download-btn"
+                           data-filename="{{ file.name }}"
+                           data-url="{{ request.url_root }}download/{{ current_directory }}/{{ file.name }}"
+                           onmouseover="showTooltip(event)"
+                           onmouseout="hideTooltip(event)">Скачать</a>
+                        <button class="copy-button" onclick="copyToClipboard('{{ file.network_path }}')">copy smb</button>
+                        <button class="cmd-button" onclick="copyCurlCommand('{{ request.url_root }}download/{{ current_directory }}/{{ file.name }}')">copy cmd</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="tooltip" class="tooltip-custom"></div>
+    <script>
+        function copyToClipboard(text) {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.setAttribute('value', text);
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Path copied to clipboard: ' + text);
+        }
+
+        function copyCurlCommand(url) {
+            const filename = url.split('/').pop(); // Получаем имя файла из URL
+            const command = `curl -H "Authorization: Basic bWFzdGVyOjFxYXpYU1dA" -o ${filename} ${url}`; // Формируем команду curl
+            copyToClipboard(command); // Копируем команду в буфер обмена
+        }
+
+        function showTooltip(event) {
+            const button = event.currentTarget;
+            const filename = button.getAttribute('data-filename');
+            const url = button.getAttribute('data-url');
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerText = `curl -o ${filename} ${url}`;
+            const rect = button.getBoundingClientRect();
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight}px`;
+            tooltip.style.display = 'block';
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.display = 'none';
+        }
+
+        window.addEventListener('scroll', function() {
+            document.body.style.backgroundPositionY = -window.scrollY + 'px'; // Изменяем позицию фона по вертикали
+        });
+    </script>
+</body>
+</html>
