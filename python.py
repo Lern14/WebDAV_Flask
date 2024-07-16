@@ -11,7 +11,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# Определение базовой директории вашего приложения
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Путь к папке `htdocs`
@@ -21,7 +21,7 @@ htdocs_path = os.path.join(base_dir, 'wsgidav', 'dir_browser', 'htdocs')
 target_directory = r"G:\Distr"
 
 # _________Сетевой адрес сервера
-server_ip = '192.168.100.000'  # измените на фактический IP-адрес вашего сервера
+server_ip = '192.168.100.000'  
 
 # _______Конфигурация WsgiDAV
 dav_config = {
@@ -35,7 +35,7 @@ dav_config = {
         "enable": True,
         "response_trailer": True,
         "davmount": True,
-        "htdocs_path": htdocs_path  # Указываем путь к папке htdocs
+        "htdocs_path": htdocs_path  
     },
     "verbose": 2,
 }
