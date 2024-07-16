@@ -1,0 +1,17 @@
+body {
+    background: url('/static/scale_1200.jpg') no-repeat center top fixed;
+    background-size: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.download-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
+
+/* При прокрутке вниз сдвигаем фон вверх */
+body.scrolled-down {
+    background-position-y: -100px; /* или другое значение в пикселях */
+}
