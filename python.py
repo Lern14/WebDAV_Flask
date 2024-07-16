@@ -139,5 +139,5 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 
 if __name__ == '__main__':
     server = create_server(app, host='0.0.0.0', port=20555)
-    print(f"Сервер запущен на порту {server.effective_port}")
+    print(f"port server {server.effective_port}")
     server.run()
